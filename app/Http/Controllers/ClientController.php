@@ -13,37 +13,45 @@ class ClientController extends Controller
 {
     public function register(ClientRequest $request)
     {
-        try {
+        try
+        {
             DB::beginTransaction();
             $info = $request->all();
             $info['password'] = bcrypt($request->password);
             $check = client::create($info);
             DB::commit();
+
             return response()->json([
                 'status' => 200,
                 'message' => 'signed up successfully',
             ]);
-        } catch (\Throwable $th) {
+        } catch (\Throwable $th)
+        {
             DB::rollBack();
+
             return response()->json([
                 'status' => 500,
                 'message' => $th->getMessage(),
             ]);
         }
     }
+
     public function login(Request $request)
     {
         $client = Client::where('email', $request->email)->first();
-        if($client && Hash::check($request->password, $client->password)){
+        if ($client && Hash::check($request->password, $client->password))
+        {
             Auth::guard('clients')->login($client);
             $saveClient = Auth::guard('clients')->user();
             $token = $saveClient->createToken('authToken', ['*'], now()->addDays(7))->plainTextToken;
+
             return response()->json([
                 'status'    => 200,
                 'message'   => 'Login successfully',
                 'token'   => $token,
             ]);
-        }else{
+        } else
+        {
             return response()->json([
                 'status'    => 500,
                 'message'   => 'You have entered incorrect information',
@@ -58,5 +66,4 @@ class ClientController extends Controller
             'message'    => $request->user(),
         ]);
     }
-
 }
