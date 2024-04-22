@@ -3,16 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ClientRequest;
-use App\Models\client;
 use App\Models\User;
+use App\Services\User\ChangePasswordService;
 use App\Services\Auth\RegisterUserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
+    const EXPIRED_DAY_TOKEN = 7;
     /**
      * Register a User.
      *
@@ -25,7 +27,7 @@ class UserController extends Controller
         if ($result) {
             return $this->responseSuccess([
                 'message' => __('messages.signup_success'),
-            ]);
+            ], response::HTTP_CREATED);
         }
 
         return $this->responseErrors(__('messages.signup_fail'));
@@ -38,16 +40,16 @@ class UserController extends Controller
      */
     public function login(Request $request)
     {
+        $user = User::where('email', $request->email)->first();
+
         if (
-            ($user = User::where('email', $request->email)->first()) &&
-            Hash::check($request->password, $user->password)
+            !empty($user) &&
+            Auth::attempt(['email' => $request->email, 'password' => $request->password])
         ) {
-            Auth::login($user);
-            $saveUser = Auth::user();
-            $token = $saveUser->createToken(
+            $token = auth()->user()->createToken(
                 'authToken',
                 ['*'],
-                now()->addDays(7)
+                now()->addDays(self::EXPIRED_DAY_TOKEN)
             )->plainTextToken;
 
             return $this->responseSuccess([
@@ -57,7 +59,7 @@ class UserController extends Controller
             ]);
         }
 
-        return $this->responseErrors(__('messages.incorrect_information'), 401);
+        return $this->responseErrors(__('messages.incorrect_information'), Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -67,9 +69,24 @@ class UserController extends Controller
      */
     public function info(Request $request)
     {
-        return response()->json([
-            'status'   => 200,
-            'user'    => $request->user(),
-        ], 200);
+        return $this->responseSuccess([
+            'user' => $request->user(),
+        ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $check = resolve(ChangePasswordService::class)->setParam([
+            'password' => $request->password,
+            'new_password' => $request->new_password,
+        ])->handle();
+
+        if($check){
+            return $this->responseSuccess([
+                'message' => __('messages.change_password_success'),
+            ]);
+        }
+
+        return $this->responseErrors(__('messages.incorrect_information'), Response::HTTP_UNAUTHORIZED);
     }
 }
