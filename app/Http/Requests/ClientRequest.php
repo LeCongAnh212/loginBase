@@ -22,10 +22,9 @@ class ClientRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'fullname' => 'required|string',
-            'email' => 'required|email|unique:clients',
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
-            'phone_number' => 'required|string'
         ];
     }
     public function messages(): array
