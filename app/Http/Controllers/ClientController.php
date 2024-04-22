@@ -11,10 +11,14 @@ use Illuminate\Support\Facades\Hash;
 
 class ClientController extends Controller
 {
+    /**
+     * register based on $request
+     * @param \App\Http\Requests\ClientRequest $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function register(ClientRequest $request)
     {
-        try
-        {
+        try {
             DB::beginTransaction();
             $info = $request->all();
             $info['password'] = bcrypt($request->password);
@@ -22,48 +26,65 @@ class ClientController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 200,
-                'message' => 'signed up successfully',
-            ]);
-        } catch (\Throwable $th)
-        {
+                'status' => 201,
+                'message' => __('messages.signup_success'),
+            ], 201);
+        } catch (\Throwable $th) {
             DB::rollBack();
 
             return response()->json([
                 'status' => 500,
+                'error' => __('messages.error_server'),
                 'message' => $th->getMessage(),
-            ]);
+            ], 500);
         }
     }
 
+    /**
+     * Log in based on email and password
+     * @param String $email, String $password
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function login(Request $request)
     {
-        $client = Client::where('email', $request->email)->first();
-        if ($client && Hash::check($request->password, $client->password))
-        {
+        $client = Client::where('email', $request->email)
+            ->first();
+
+        if (
+            $client &&
+            Hash::check($request->password, $client->password)
+        ) {
             Auth::guard('clients')->login($client);
             $saveClient = Auth::guard('clients')->user();
-            $token = $saveClient->createToken('authToken', ['*'], now()->addDays(7))->plainTextToken;
+            $token = $saveClient->createToken(
+                'authToken',
+                ['*'],
+                now()->addDays(7)
+            )->plainTextToken;
 
             return response()->json([
                 'status'    => 200,
-                'message'   => 'Login successfully',
+                'message'   => __('messages.login_success'),
                 'token'   => $token,
-            ]);
-        } else
-        {
-            return response()->json([
-                'status'    => 500,
-                'message'   => 'You have entered incorrect information',
-            ]);
+            ], 200);
         }
+        
+        return response()->json([
+            'status'    => 401,
+            'message'   => __('messages.incorrect_information'),
+        ], 401);
     }
 
+    /**
+     * Retrieve user information on the server
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function info(Request $request)
     {
         return response()->json([
             'status'   => 200,
-            'message'    => $request->user(),
-        ]);
+            'user_info'    => $request->user(),
+        ], 200);
     }
 }
