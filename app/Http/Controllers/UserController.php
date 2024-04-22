@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Services\User\ChangePasswordService;
 use App\Services\Auth\RegisterUserService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+//use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,10 +15,11 @@ use Symfony\Component\HttpFoundation\Response;
 class UserController extends Controller
 {
     const EXPIRED_DAY_TOKEN = 7;
+
     /**
      * Register a User.
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * @param ClientRequest $request
+     * @return array|string|null
      */
     public function register(ClientRequest $request)
     {
@@ -35,16 +36,16 @@ class UserController extends Controller
 
     /**
      * Log in based on email and password
-     * @param String $email, String $password
+     * @param string $email
+     * @param string $password
      * @return mixed|\Illuminate\Http\JsonResponse
      */
     public function login(Request $request)
     {
         $user = User::where('email', $request->email)->first();
-
         if (
             !empty($user) &&
-            Auth::attempt(['email' => $request->email, 'password' => $request->password])
+            auth()->attempt(['email' => $request->email, 'password' => $request->password])
         ) {
             $token = auth()->user()->createToken(
                 'authToken',
@@ -74,6 +75,12 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * Summary of changePassword
+     * @param string|mixed password
+     * @param string|mixed new_password
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function changePassword(Request $request)
     {
         $check = resolve(ChangePasswordService::class)->setParam([
@@ -81,7 +88,7 @@ class UserController extends Controller
             'new_password' => $request->new_password,
         ])->handle();
 
-        if($check){
+        if ($check) {
             return $this->responseSuccess([
                 'message' => __('messages.change_password_success'),
             ]);

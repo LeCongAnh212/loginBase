@@ -11,6 +11,12 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
+    /**
+     * handle response errors
+     * @param string $message
+     * @param int $status
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function responseErrors($message = '', $status = Response::HTTP_BAD_REQUEST)
     {
         return response()->json([
@@ -19,6 +25,12 @@ class Controller extends BaseController
         ], $status);
     }
 
+    /**
+     * handle response success
+     * @param mixed $data
+     * @param mixed $statusCode
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function responseSuccess($data, $statusCode = Response::HTTP_OK)
     {
         return response()->json(

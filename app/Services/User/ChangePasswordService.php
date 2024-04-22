@@ -16,6 +16,10 @@ class ChangePasswordService extends BaseService
         $this->userRepository = $userRepository;
     }
 
+    /**
+     * handle change password
+     * @return bool
+     */
     public function handle()
     {
         if (Hash::check($this->data['password'], Auth::user()->password)) {
