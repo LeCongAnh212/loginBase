@@ -27,6 +27,11 @@ class ClientRequest extends FormRequest
             'password' => 'required|string|min:8',
         ];
     }
+
+    /**
+     * retrieve validation messages
+     * @return array
+     */
     public function messages(): array
     {
         return [
