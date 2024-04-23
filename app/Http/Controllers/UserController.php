@@ -74,19 +74,20 @@ class UserController extends Controller
         ]);
     }
 
-    public function changePassword(Request $request)
+    /**
+     * logout user
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function logout()
     {
-        $check = resolve(ChangePasswordService::class)->setParam([
-            'password' => $request->password,
-            'new_password' => $request->new_password,
-        ])->handle();
+        try {
+            auth()->logout();
 
-        if($check){
             return $this->responseSuccess([
-                'message' => __('messages.change_password_success'),
+                'message' => __('messages.logout_success'),
             ]);
+        } catch (\Throwable $th) {
+            return $this->responseErrors($th->getMessage());
         }
-
-        return $this->responseErrors(__('messages.incorrect_information'), Response::HTTP_UNAUTHORIZED);
     }
 }

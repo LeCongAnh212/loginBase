@@ -6,4 +6,5 @@ return [
     'error_server' => 'Lỗi máy chủ',
     'incorrect_information' => 'Thông tin không hợp lệ',
     'change_password_success' => 'Đổi mật khẩu thành công',
+    'logout_success' => 'Đăng xuất thành công',
 ];

@@ -6,4 +6,5 @@ return [
     'error_server' => 'Internal server error',
     'incorrect_information' => 'Incorrect information',
     'change_password_success' => 'Changed password successfully',
+    'logout_success' => 'Logged out successfully',
 ];
