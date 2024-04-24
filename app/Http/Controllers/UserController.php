@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 class UserController extends Controller
 {
     const EXPIRED_DAY_TOKEN = 7;
+    
     /**
      * Register a User.
      *
