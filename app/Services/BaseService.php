@@ -9,7 +9,7 @@ abstract class BaseService
     public function setParam($data = null)
     {
         $this->data = $data;
-        
+
         return $this;
     }
 
